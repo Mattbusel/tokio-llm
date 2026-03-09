@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-//  Role 
+//  Role
 
 /// The role of a participant in a conversation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,7 +20,7 @@ pub enum Role {
     Assistant,
 }
 
-//  Message 
+//  Message
 
 /// A single message in a conversation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -88,7 +88,7 @@ impl Message {
     }
 }
 
-//  Model 
+//  Model
 
 /// All supported LLM models across OpenAI and Anthropic.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -207,7 +207,7 @@ impl Model {
     }
 }
 
-//  ChatRequest 
+//  ChatRequest
 
 /// A request to a chat completion endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -261,7 +261,7 @@ impl ChatRequest {
     }
 }
 
-//  Usage 
+//  Usage
 
 /// Token usage and estimated cost for a single API call.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -293,7 +293,7 @@ impl Usage {
     }
 }
 
-//  ChatResponse 
+//  ChatResponse
 
 /// A complete (non-streaming) response from a chat completion endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -308,7 +308,7 @@ pub struct ChatResponse {
     pub request_id: Option<String>,
 }
 
-//  StreamChunk 
+//  StreamChunk
 
 /// A single chunk received from a streaming chat completion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -345,7 +345,7 @@ impl StreamChunk {
 mod tests {
     use super::*;
 
-    //  Role tests 
+    //  Role tests
 
     #[test]
     fn test_role_serializes_lowercase() {
@@ -375,7 +375,7 @@ mod tests {
         assert_ne!(Role::User, Role::Assistant);
     }
 
-    //  Message tests 
+    //  Message tests
 
     #[test]
     fn test_message_new_sets_role_and_content() {
@@ -418,7 +418,7 @@ mod tests {
         assert_eq!(m.content, "owned string");
     }
 
-    //  Model tests 
+    //  Model tests
 
     #[test]
     fn test_model_as_str_gpt4o() {
@@ -496,7 +496,7 @@ mod tests {
         }
     }
 
-    //  ChatRequest tests 
+    //  ChatRequest tests
 
     #[test]
     fn test_chat_request_new_defaults() {
@@ -527,7 +527,7 @@ mod tests {
         assert!((req.temperature.unwrap_or(0.0) - 0.5).abs() < f32::EPSILON);
     }
 
-    //  Usage tests 
+    //  Usage tests
 
     #[test]
     fn test_usage_new_computes_total_tokens() {
@@ -550,7 +550,7 @@ mod tests {
         assert_eq!(u.cost_usd, 0.0);
     }
 
-    //  StreamChunk tests 
+    //  StreamChunk tests
 
     #[test]
     fn test_stream_chunk_delta_not_final() {
