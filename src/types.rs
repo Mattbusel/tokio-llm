@@ -427,10 +427,7 @@ mod tests {
 
     #[test]
     fn test_model_as_str_claude35_sonnet() {
-        assert_eq!(
-            Model::Claude35Sonnet.as_str(),
-            "claude-3-5-sonnet-20241022"
-        );
+        assert_eq!(Model::Claude35Sonnet.as_str(), "claude-3-5-sonnet-20241022");
     }
 
     #[test]

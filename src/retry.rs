@@ -164,7 +164,7 @@ impl Default for RetryPolicy {
 mod tests {
     use super::*;
 
-    //  Constructor tests 
+    //  Constructor tests
 
     #[test]
     fn test_none_has_one_attempt() {
@@ -194,7 +194,7 @@ mod tests {
         assert_eq!(p.max_attempts(), 1);
     }
 
-    //  delay_for_attempt tests 
+    //  delay_for_attempt tests
 
     #[test]
     fn test_delay_attempt_0_is_zero() {
@@ -268,7 +268,7 @@ mod tests {
         assert!(RetryPolicy::default().has_retries());
     }
 
-    //  Property-based tests 
+    //  Property-based tests
 
     use proptest::prelude::*;
 

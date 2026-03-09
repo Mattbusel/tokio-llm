@@ -75,7 +75,7 @@ pub mod providers;
 pub mod retry;
 pub mod types;
 
-//  Re-exports 
+//  Re-exports
 
 pub use budget::BudgetEnforcer;
 pub use circuit_breaker::{CircuitBreaker, CircuitState};
@@ -84,6 +84,4 @@ pub use error::LlmError;
 pub use providers::anthropic::AnthropicProvider;
 pub use providers::openai::OpenAiProvider;
 pub use retry::RetryPolicy;
-pub use types::{
-    ChatRequest, ChatResponse, Message, Model, Role, StreamChunk, Usage,
-};
+pub use types::{ChatRequest, ChatResponse, Message, Model, Role, StreamChunk, Usage};

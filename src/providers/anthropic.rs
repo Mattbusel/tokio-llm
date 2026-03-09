@@ -33,7 +33,7 @@ const ANTHROPIC_BASE_URL: &str = "https://api.anthropic.com/v1";
 /// Required API version header value.
 const ANTHROPIC_VERSION: &str = "2023-06-01";
 
-//  Wire types 
+//  Wire types
 
 #[derive(Debug, Serialize)]
 struct AnthropicRequest<'a> {
@@ -116,7 +116,7 @@ struct AnthropicErrorDetail {
     message: String,
 }
 
-//  Pricing 
+//  Pricing
 
 /// Returns (input_price_per_1k, output_price_per_1k) in USD for a model.
 fn model_price_per_1k(model: &str) -> (f64, f64) {
@@ -133,11 +133,10 @@ fn model_price_per_1k(model: &str) -> (f64, f64) {
 /// Compute the USD cost of a completed Anthropic request.
 fn compute_cost(model: &str, input_tokens: u32, output_tokens: u32) -> f64 {
     let (input_price, output_price) = model_price_per_1k(model);
-    (input_tokens as f64 / 1000.0) * input_price
-        + (output_tokens as f64 / 1000.0) * output_price
+    (input_tokens as f64 / 1000.0) * input_price + (output_tokens as f64 / 1000.0) * output_price
 }
 
-//  Provider 
+//  Provider
 
 /// Anthropic Messages API provider.
 ///
@@ -176,9 +175,7 @@ impl AnthropicProvider {
     }
 
     /// Extract optional system message and non-system messages from a request.
-    fn split_messages<'a>(
-        req: &'a ChatRequest,
-    ) -> (Option<&'a str>, Vec<AnthropicMessage<'a>>) {
+    fn split_messages<'a>(req: &'a ChatRequest) -> (Option<&'a str>, Vec<AnthropicMessage<'a>>) {
         let system = req
             .messages
             .iter()
@@ -390,7 +387,7 @@ mod tests {
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
-    //  Unit tests 
+    //  Unit tests
 
     #[test]
     fn test_compute_cost_claude35_sonnet() {
@@ -453,7 +450,8 @@ mod tests {
 
     #[test]
     fn test_parse_anthropic_sse_text_delta() {
-        let sse = r#"data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hello"}}"#;
+        let sse =
+            r#"data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hello"}}"#;
         let results = parse_anthropic_sse(sse, "claude-3-5-sonnet-20241022");
         assert_eq!(results.len(), 1);
         match &results[0] {
@@ -522,7 +520,7 @@ mod tests {
         assert_eq!(p.base_url, "http://localhost:9090");
     }
 
-    //  Integration tests with wiremock 
+    //  Integration tests with wiremock
 
     fn chat_request() -> ChatRequest {
         ChatRequest::new(
@@ -625,12 +623,15 @@ mod tests {
             .await;
 
         let provider = AnthropicProvider::with_base_url("sk-ant-test", server.uri());
-        let resp = provider.chat(&chat_request()).await.unwrap_or_else(|_| ChatResponse {
-            content: String::new(),
-            model: String::new(),
-            usage: Usage::default(),
-            request_id: None,
-        });
+        let resp = provider
+            .chat(&chat_request())
+            .await
+            .unwrap_or_else(|_| ChatResponse {
+                content: String::new(),
+                model: String::new(),
+                usage: Usage::default(),
+                request_id: None,
+            });
         assert_eq!(resp.content, "Hello world");
     }
 
@@ -661,6 +662,8 @@ mod tests {
             collected.push(chunk);
         }
         assert!(!collected.is_empty());
-        assert!(collected.iter().any(|c| c.as_ref().map(|ch| ch.is_final).unwrap_or(false)));
+        assert!(collected
+            .iter()
+            .any(|c| c.as_ref().map(|ch| ch.is_final).unwrap_or(false)));
     }
 }

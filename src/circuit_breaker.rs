@@ -10,7 +10,7 @@
 //! Closed (threshold failures) Open
 //!                                   
 //!    (probe succeeds)                (reset_timeout elapses)
-//!    HalfOpen 
+//!    HalfOpen
 //!            
 //!            (probe fails) Open
 //! ```
@@ -117,7 +117,7 @@ impl CircuitBreaker {
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<T, LlmError>>,
     {
-        //  Phase 1: check state under lock 
+        //  Phase 1: check state under lock
         {
             let mut inner = self.inner.lock().await;
             match inner.state {
@@ -144,10 +144,10 @@ impl CircuitBreaker {
             }
         }
 
-        //  Phase 2: execute the call (outside the lock) 
+        //  Phase 2: execute the call (outside the lock)
         let result = f().await;
 
-        //  Phase 3: update state under lock 
+        //  Phase 3: update state under lock
         {
             let mut inner = self.inner.lock().await;
             match &result {

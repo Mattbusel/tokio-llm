@@ -247,9 +247,9 @@ mod tests {
         let mut handles = Vec::new();
         for _ in 0..50 {
             let ec = Arc::clone(&e);
-            handles.push(tokio::spawn(async move {
-                ec.record_usage(&make_usage(1.0))
-            }));
+            handles.push(tokio::spawn(
+                async move { ec.record_usage(&make_usage(1.0)) },
+            ));
         }
         for h in handles {
             let _ = h.await;
@@ -259,8 +259,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_concurrent_charges_stop_at_limit() {
-        use std::sync::Arc;
         use std::sync::atomic::{AtomicU32, Ordering as AO};
+        use std::sync::Arc;
         let e = Arc::new(BudgetEnforcer::new(10.0));
         let rejected = Arc::new(AtomicU32::new(0));
         let mut handles = Vec::new();

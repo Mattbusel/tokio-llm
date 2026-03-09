@@ -30,7 +30,7 @@ use super::Provider;
 /// Base URL for the OpenAI API.
 const OPENAI_BASE_URL: &str = "https://api.openai.com/v1";
 
-//  Wire types 
+//  Wire types
 
 #[derive(Debug, Serialize)]
 struct OpenAiRequest<'a> {
@@ -101,7 +101,7 @@ struct OpenAiErrorDetail {
     message: String,
 }
 
-//  Pricing 
+//  Pricing
 
 /// Returns (prompt_price_per_1k, completion_price_per_1k) in USD for a model.
 fn model_price_per_1k(model: &str) -> (f64, f64) {
@@ -124,7 +124,7 @@ fn compute_cost(model: &str, prompt_tokens: u32, completion_tokens: u32) -> f64 
         + (completion_tokens as f64 / 1000.0) * completion_price
 }
 
-//  Provider 
+//  Provider
 
 /// OpenAI API provider.
 ///
@@ -207,7 +207,6 @@ fn role_str(role: &Role) -> &'static str {
         Role::Assistant => "assistant",
     }
 }
-
 
 #[async_trait]
 impl Provider for OpenAiProvider {
@@ -337,7 +336,6 @@ fn parse_sse_chunk(text: &str, model: &str) -> Vec<Result<StreamChunk, LlmError>
     results
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -345,7 +343,7 @@ mod tests {
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
-    //  Unit tests 
+    //  Unit tests
 
     #[test]
     fn test_role_str_system() {
@@ -451,8 +449,14 @@ mod tests {
                    data: [DONE]";
         let results = parse_sse_chunk(sse, "gpt-4o");
         assert_eq!(results.len(), 3);
-        assert_eq!(results[0].as_ref().map(|c| c.delta.as_str()).unwrap_or(""), "A");
-        assert_eq!(results[1].as_ref().map(|c| c.delta.as_str()).unwrap_or(""), "B");
+        assert_eq!(
+            results[0].as_ref().map(|c| c.delta.as_str()).unwrap_or(""),
+            "A"
+        );
+        assert_eq!(
+            results[1].as_ref().map(|c| c.delta.as_str()).unwrap_or(""),
+            "B"
+        );
         assert!(results[2].as_ref().map(|c| c.is_final).unwrap_or(false));
     }
 
@@ -476,15 +480,11 @@ mod tests {
         assert_eq!(p.base_url, "http://localhost:8080");
     }
 
-    //  Integration tests with wiremock 
+    //  Integration tests with wiremock
 
     fn chat_request() -> ChatRequest {
         use crate::types::Message;
-        ChatRequest::new(
-            Model::Gpt4oMini,
-            vec![Message::user("Say hello")],
-        )
-        .with_max_tokens(50)
+        ChatRequest::new(Model::Gpt4oMini, vec![Message::user("Say hello")]).with_max_tokens(50)
     }
 
     #[tokio::test]
@@ -597,12 +597,15 @@ mod tests {
             .await;
 
         let provider = OpenAiProvider::with_base_url("sk-test", server.uri());
-        let resp = provider.chat(&chat_request()).await.unwrap_or_else(|_| ChatResponse {
-            content: String::new(),
-            model: String::new(),
-            usage: Usage::default(),
-            request_id: None,
-        });
+        let resp = provider
+            .chat(&chat_request())
+            .await
+            .unwrap_or_else(|_| ChatResponse {
+                content: String::new(),
+                model: String::new(),
+                usage: Usage::default(),
+                request_id: None,
+            });
         // gpt-4o-mini: 0.000150/1k prompt, 0.000600/1k completion
         // 1000 prompt = 0.000150; 500 completion = 0.000300 → total 0.000450
         assert!((resp.usage.cost_usd - 0.000450).abs() < 1e-9);
@@ -637,6 +640,8 @@ mod tests {
         }
         // Should have: "Hello", " world", [DONE]
         assert!(collected.len() >= 2);
-        assert!(collected.iter().any(|c| c.as_ref().map(|ch| ch.is_final).unwrap_or(false)));
+        assert!(collected
+            .iter()
+            .any(|c| c.as_ref().map(|ch| ch.is_final).unwrap_or(false)));
     }
 }

@@ -31,7 +31,7 @@ use crate::providers::Provider;
 use crate::retry::RetryPolicy;
 use crate::types::{ChatRequest, ChatResponse, StreamChunk};
 
-//  LlmClient 
+//  LlmClient
 
 /// The main user-facing async LLM client.
 ///
@@ -111,13 +111,20 @@ impl LlmClient {
             // Sleep before retries (no sleep on first attempt)
             if attempt > 0 {
                 let delay = self.retry.delay_for_attempt(attempt);
-                debug!(attempt, delay_ms = delay.as_millis(), "retrying after delay");
+                debug!(
+                    attempt,
+                    delay_ms = delay.as_millis(),
+                    "retrying after delay"
+                );
                 tokio::time::sleep(delay).await;
             }
 
             let provider = Arc::clone(&self.provider);
             let req_ref = &req;
-            let result = self.breaker.call(|| async move { provider.chat(req_ref).await }).await;
+            let result = self
+                .breaker
+                .call(|| async move { provider.chat(req_ref).await })
+                .await;
 
             match result {
                 Ok(resp) => {
@@ -180,7 +187,7 @@ impl LlmClient {
     }
 }
 
-//  ClientBuilder 
+//  ClientBuilder
 
 /// Fluent builder for [`LlmClient`].
 ///
@@ -293,7 +300,7 @@ mod tests {
     use crate::types::{Message, Model, Usage};
     use std::sync::atomic::{AtomicU32, Ordering};
 
-    //  Fake provider for testing 
+    //  Fake provider for testing
 
     #[derive(Debug)]
     struct FakeProvider {
@@ -395,12 +402,11 @@ mod tests {
         ChatRequest::new(Model::Gpt4oMini, vec![Message::user("hi")])
     }
 
-    //  Builder tests 
+    //  Builder tests
 
     #[test]
     fn test_builder_default_builds_successfully() {
-        let client = LlmClient::with_provider(Arc::new(FakeProvider::success("ok")))
-            .build();
+        let client = LlmClient::with_provider(Arc::new(FakeProvider::success("ok"))).build();
         assert!(client.is_ok());
     }
 
@@ -445,7 +451,7 @@ mod tests {
         assert_eq!(client.remaining_budget(), Some(5.0));
     }
 
-    //  Chat tests 
+    //  Chat tests
 
     #[tokio::test]
     async fn test_chat_success_returns_response() {
@@ -489,13 +495,17 @@ mod tests {
     #[tokio::test]
     async fn test_chat_retries_on_503() {
         let provider = Arc::new(FailNTimesProvider::new(2));
-        let client = LlmClient::with_provider(Arc::clone(&provider) as Arc<dyn Provider + Send + Sync>)
-            .with_retry(RetryPolicy::exponential(5, Duration::from_millis(1)))
-            .build()
-            .unwrap_or_else(|_| panic!("build failed"));
+        let client =
+            LlmClient::with_provider(Arc::clone(&provider) as Arc<dyn Provider + Send + Sync>)
+                .with_retry(RetryPolicy::exponential(5, Duration::from_millis(1)))
+                .build()
+                .unwrap_or_else(|_| panic!("build failed"));
         let result = client.chat(make_req()).await;
         assert!(result.is_ok(), "expected success after retries");
-        assert_eq!(result.unwrap_or_else(|_| panic!("no resp")).content, "recovered");
+        assert_eq!(
+            result.unwrap_or_else(|_| panic!("no resp")).content,
+            "recovered"
+        );
     }
 
     #[tokio::test]
