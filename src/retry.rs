@@ -136,7 +136,7 @@ impl RetryPolicy {
         } else {
             0
         };
-        Duration::from_millis(capped + jitter)
+        Duration::from_millis((capped + jitter).min(cap_millis))
     }
 
     /// Returns `true` if this policy allows at least one retry.
