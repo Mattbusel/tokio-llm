@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-// ─── Role ────────────────────────────────────────────────────────────────────
+//  Role 
 
 /// The role of a participant in a conversation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,7 +20,7 @@ pub enum Role {
     Assistant,
 }
 
-// ─── Message ─────────────────────────────────────────────────────────────────
+//  Message 
 
 /// A single message in a conversation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -35,8 +35,8 @@ impl Message {
     /// Construct a new [`Message`].
     ///
     /// # Arguments
-    /// * `role` — who is sending this message
-    /// * `content` — the text content
+    /// * `role`  -  who is sending this message
+    /// * `content`  -  the text content
     ///
     /// # Example
     /// ```rust
@@ -88,49 +88,49 @@ impl Message {
     }
 }
 
-// ─── Model ───────────────────────────────────────────────────────────────────
+//  Model 
 
 /// All supported LLM models across OpenAI and Anthropic.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Model {
     // OpenAI models
-    /// GPT-4o — OpenAI's latest multimodal flagship model.
+    /// GPT-4o  -  OpenAI's latest multimodal flagship model.
     #[serde(rename = "gpt-4o")]
     Gpt4o,
-    /// GPT-4o mini — fast and cost-efficient.
+    /// GPT-4o mini  -  fast and cost-efficient.
     #[serde(rename = "gpt-4o-mini")]
     Gpt4oMini,
-    /// GPT-4 Turbo — previous-generation high-capability model.
+    /// GPT-4 Turbo  -  previous-generation high-capability model.
     #[serde(rename = "gpt-4-turbo")]
     Gpt4Turbo,
-    /// GPT-3.5 Turbo — fast, cheap, suitable for simple tasks.
+    /// GPT-3.5 Turbo  -  fast, cheap, suitable for simple tasks.
     #[serde(rename = "gpt-3.5-turbo")]
     Gpt35Turbo,
-    /// o1 — OpenAI's reasoning model.
+    /// o1  -  OpenAI's reasoning model.
     #[serde(rename = "o1")]
     O1,
-    /// o1-mini — smaller, faster reasoning model.
+    /// o1-mini  -  smaller, faster reasoning model.
     #[serde(rename = "o1-mini")]
     O1Mini,
-    /// o3-mini — latest compact reasoning model.
+    /// o3-mini  -  latest compact reasoning model.
     #[serde(rename = "o3-mini")]
     O3Mini,
 
     // Anthropic models
-    /// Claude 3.5 Sonnet — Anthropic's best balance of speed and capability.
+    /// Claude 3.5 Sonnet  -  Anthropic's best balance of speed and capability.
     #[serde(rename = "claude-3-5-sonnet-20241022")]
     Claude35Sonnet,
-    /// Claude 3.5 Haiku — Anthropic's fastest model.
+    /// Claude 3.5 Haiku  -  Anthropic's fastest model.
     #[serde(rename = "claude-3-5-haiku-20241022")]
     Claude35Haiku,
-    /// Claude 3 Opus — Anthropic's most capable model.
+    /// Claude 3 Opus  -  Anthropic's most capable model.
     #[serde(rename = "claude-3-opus-20240229")]
     Claude3Opus,
-    /// Claude 3 Sonnet — balanced Anthropic model.
+    /// Claude 3 Sonnet  -  balanced Anthropic model.
     #[serde(rename = "claude-3-sonnet-20240229")]
     Claude3Sonnet,
-    /// Claude 3 Haiku — smallest and fastest Anthropic model.
+    /// Claude 3 Haiku  -  smallest and fastest Anthropic model.
     #[serde(rename = "claude-3-haiku-20240307")]
     Claude3Haiku,
 
@@ -207,7 +207,7 @@ impl Model {
     }
 }
 
-// ─── ChatRequest ─────────────────────────────────────────────────────────────
+//  ChatRequest 
 
 /// A request to a chat completion endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -229,8 +229,8 @@ impl ChatRequest {
     /// Create a new [`ChatRequest`] with the given model and messages.
     ///
     /// # Arguments
-    /// * `model` — which LLM to call
-    /// * `messages` — the full conversation context
+    /// * `model`  -  which LLM to call
+    /// * `messages`  -  the full conversation context
     ///
     /// # Example
     /// ```rust
@@ -261,7 +261,7 @@ impl ChatRequest {
     }
 }
 
-// ─── Usage ───────────────────────────────────────────────────────────────────
+//  Usage 
 
 /// Token usage and estimated cost for a single API call.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -280,9 +280,9 @@ impl Usage {
     /// Construct a [`Usage`] record.
     ///
     /// # Arguments
-    /// * `prompt_tokens` — input token count
-    /// * `completion_tokens` — output token count
-    /// * `cost_usd` — computed cost in USD
+    /// * `prompt_tokens`  -  input token count
+    /// * `completion_tokens`  -  output token count
+    /// * `cost_usd`  -  computed cost in USD
     pub fn new(prompt_tokens: u32, completion_tokens: u32, cost_usd: f64) -> Self {
         Self {
             prompt_tokens,
@@ -293,7 +293,7 @@ impl Usage {
     }
 }
 
-// ─── ChatResponse ─────────────────────────────────────────────────────────────
+//  ChatResponse 
 
 /// A complete (non-streaming) response from a chat completion endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -308,7 +308,7 @@ pub struct ChatResponse {
     pub request_id: Option<String>,
 }
 
-// ─── StreamChunk ─────────────────────────────────────────────────────────────
+//  StreamChunk 
 
 /// A single chunk received from a streaming chat completion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -317,7 +317,7 @@ pub struct StreamChunk {
     pub delta: String,
     /// Whether this is the final chunk in the stream.
     pub is_final: bool,
-    /// Final usage stats — only populated on the last chunk, if the provider sends them.
+    /// Final usage stats  -  only populated on the last chunk, if the provider sends them.
     pub usage: Option<Usage>,
 }
 
@@ -345,7 +345,7 @@ impl StreamChunk {
 mod tests {
     use super::*;
 
-    // ── Role tests ──────────────────────────────────────────────────────────
+    //  Role tests 
 
     #[test]
     fn test_role_serializes_lowercase() {
@@ -375,7 +375,7 @@ mod tests {
         assert_ne!(Role::User, Role::Assistant);
     }
 
-    // ── Message tests ───────────────────────────────────────────────────────
+    //  Message tests 
 
     #[test]
     fn test_message_new_sets_role_and_content() {
@@ -418,7 +418,7 @@ mod tests {
         assert_eq!(m.content, "owned string");
     }
 
-    // ── Model tests ─────────────────────────────────────────────────────────
+    //  Model tests 
 
     #[test]
     fn test_model_as_str_gpt4o() {
@@ -496,7 +496,7 @@ mod tests {
         }
     }
 
-    // ── ChatRequest tests ────────────────────────────────────────────────────
+    //  ChatRequest tests 
 
     #[test]
     fn test_chat_request_new_defaults() {
@@ -527,7 +527,7 @@ mod tests {
         assert!((req.temperature.unwrap_or(0.0) - 0.5).abs() < f32::EPSILON);
     }
 
-    // ── Usage tests ──────────────────────────────────────────────────────────
+    //  Usage tests 
 
     #[test]
     fn test_usage_new_computes_total_tokens() {
@@ -550,7 +550,7 @@ mod tests {
         assert_eq!(u.cost_usd, 0.0);
     }
 
-    // ── StreamChunk tests ────────────────────────────────────────────────────
+    //  StreamChunk tests 
 
     #[test]
     fn test_stream_chunk_delta_not_final() {

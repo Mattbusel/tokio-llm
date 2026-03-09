@@ -12,8 +12,8 @@
 //!
 //! ## NOT Responsible For
 //! - Deciding whether an error is retryable (see `LlmError::is_retryable`)
-//! - Sleeping/waiting — callers own the sleep (`tokio::time::sleep`)
-//! - Tracking attempt counts — callers track iteration state
+//! - Sleeping/waiting  -  callers own the sleep (`tokio::time::sleep`)
+//! - Tracking attempt counts  -  callers track iteration state
 
 use std::time::Duration;
 
@@ -23,8 +23,8 @@ pub const MAX_RETRY_DELAY: Duration = Duration::from_secs(60);
 /// Controls retry behaviour for API calls.
 ///
 /// Two constructors are provided:
-/// - [`RetryPolicy::none`] — no retries; the first error is returned
-/// - [`RetryPolicy::exponential`] — bounded exponential backoff with jitter
+/// - [`RetryPolicy::none`]  -  no retries; the first error is returned
+/// - [`RetryPolicy::exponential`]  -  bounded exponential backoff with jitter
 #[derive(Debug, Clone)]
 pub struct RetryPolicy {
     /// Maximum number of attempts (including the first). Zero means no retries.
@@ -42,8 +42,8 @@ impl RetryPolicy {
     /// ```
     ///
     /// # Arguments
-    /// * `max_attempts` — total attempts allowed (must be ≥ 1)
-    /// * `base_delay` — delay before the second attempt
+    /// * `max_attempts`  -  total attempts allowed (must be ≥ 1)
+    /// * `base_delay`  -  delay before the second attempt
     ///
     /// # Example
     /// ```rust
@@ -96,7 +96,7 @@ impl RetryPolicy {
     /// The result is capped at [`MAX_RETRY_DELAY`].
     ///
     /// # Arguments
-    /// * `attempt` — zero-indexed attempt number
+    /// * `attempt`  -  zero-indexed attempt number
     ///
     /// # Returns
     /// Duration to sleep before issuing this attempt.
@@ -164,7 +164,7 @@ impl Default for RetryPolicy {
 mod tests {
     use super::*;
 
-    // ── Constructor tests ────────────────────────────────────────────────────
+    //  Constructor tests 
 
     #[test]
     fn test_none_has_one_attempt() {
@@ -194,7 +194,7 @@ mod tests {
         assert_eq!(p.max_attempts(), 1);
     }
 
-    // ── delay_for_attempt tests ──────────────────────────────────────────────
+    //  delay_for_attempt tests 
 
     #[test]
     fn test_delay_attempt_0_is_zero() {
@@ -232,7 +232,7 @@ mod tests {
         let p = RetryPolicy::exponential(100, Duration::from_millis(1000));
         // At high attempts, should be capped at ~60s (plus jitter up to 25%)
         let d = p.delay_for_attempt(50);
-        // 60s + 25% jitter = max 75s — but jitter is added on top of 60s cap,
+        // 60s + 25% jitter = max 75s  -  but jitter is added on top of 60s cap,
         // so max is 60s + 60s/4 = 75s
         assert!(d <= Duration::from_secs(75));
     }
@@ -268,7 +268,7 @@ mod tests {
         assert!(RetryPolicy::default().has_retries());
     }
 
-    // ── Property-based tests ─────────────────────────────────────────────────
+    //  Property-based tests 
 
     use proptest::prelude::*;
 

@@ -8,15 +8,15 @@ use thiserror::Error;
 /// The unified error type returned by all tokio-llm operations.
 ///
 /// # Variants
-/// - [`LlmError::ApiError`] — the upstream API returned a non-2xx status
-/// - [`LlmError::RateLimited`] — HTTP 429 with optional retry-after seconds
-/// - [`LlmError::BudgetExceeded`] — spend limit has been reached
-/// - [`LlmError::CircuitOpen`] — circuit breaker is open; request fast-failed
-/// - [`LlmError::StreamError`] — error parsing or reading the SSE stream
-/// - [`LlmError::InvalidConfig`] — builder was configured incorrectly
-/// - [`LlmError::RequestTimeout`] — request exceeded the configured deadline
-/// - [`LlmError::Transport`] — underlying HTTP transport error
-/// - [`LlmError::Serialization`] — JSON encode/decode failure
+/// - [`LlmError::ApiError`]  -  the upstream API returned a non-2xx status
+/// - [`LlmError::RateLimited`]  -  HTTP 429 with optional retry-after seconds
+/// - [`LlmError::BudgetExceeded`]  -  spend limit has been reached
+/// - [`LlmError::CircuitOpen`]  -  circuit breaker is open; request fast-failed
+/// - [`LlmError::StreamError`]  -  error parsing or reading the SSE stream
+/// - [`LlmError::InvalidConfig`]  -  builder was configured incorrectly
+/// - [`LlmError::RequestTimeout`]  -  request exceeded the configured deadline
+/// - [`LlmError::Transport`]  -  underlying HTTP transport error
+/// - [`LlmError::Serialization`]  -  JSON encode/decode failure
 #[derive(Debug, Error)]
 pub enum LlmError {
     /// The upstream API returned a non-2xx HTTP status code.
@@ -45,7 +45,7 @@ pub enum LlmError {
     },
 
     /// The circuit breaker is in the Open state; the request was not sent.
-    #[error("circuit breaker open — service is unavailable, reset in {reset_after_secs:.1}s")]
+    #[error("circuit breaker open  -  service is unavailable, reset in {reset_after_secs:.1}s")]
     CircuitOpen {
         /// Approximate seconds until the circuit transitions to HalfOpen.
         reset_after_secs: f64,

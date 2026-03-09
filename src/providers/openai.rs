@@ -30,7 +30,7 @@ use super::Provider;
 /// Base URL for the OpenAI API.
 const OPENAI_BASE_URL: &str = "https://api.openai.com/v1";
 
-// ─── Wire types ──────────────────────────────────────────────────────────────
+//  Wire types 
 
 #[derive(Debug, Serialize)]
 struct OpenAiRequest<'a> {
@@ -101,7 +101,7 @@ struct OpenAiErrorDetail {
     message: String,
 }
 
-// ─── Pricing ─────────────────────────────────────────────────────────────────
+//  Pricing 
 
 /// Returns (prompt_price_per_1k, completion_price_per_1k) in USD for a model.
 fn model_price_per_1k(model: &str) -> (f64, f64) {
@@ -124,7 +124,7 @@ fn compute_cost(model: &str, prompt_tokens: u32, completion_tokens: u32) -> f64 
         + (completion_tokens as f64 / 1000.0) * completion_price
 }
 
-// ─── Provider ────────────────────────────────────────────────────────────────
+//  Provider 
 
 /// OpenAI API provider.
 ///
@@ -144,7 +144,7 @@ impl OpenAiProvider {
     /// Create a new [`OpenAiProvider`] with the given API key.
     ///
     /// # Arguments
-    /// * `api_key` — OpenAI secret key (starts with `sk-`)
+    /// * `api_key`  -  OpenAI secret key (starts with `sk-`)
     pub fn new(api_key: impl Into<String>) -> Self {
         Self {
             api_key: api_key.into(),
@@ -345,7 +345,7 @@ mod tests {
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
-    // ── Unit tests ───────────────────────────────────────────────────────────
+    //  Unit tests 
 
     #[test]
     fn test_role_str_system() {
@@ -476,7 +476,7 @@ mod tests {
         assert_eq!(p.base_url, "http://localhost:8080");
     }
 
-    // ── Integration tests with wiremock ──────────────────────────────────────
+    //  Integration tests with wiremock 
 
     fn chat_request() -> ChatRequest {
         use crate::types::Message;

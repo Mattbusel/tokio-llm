@@ -37,7 +37,7 @@ impl BudgetEnforcer {
     /// Create a new [`BudgetEnforcer`] with the given USD limit.
     ///
     /// # Arguments
-    /// * `limit_usd` — maximum total spend in USD before requests are rejected
+    /// * `limit_usd`  -  maximum total spend in USD before requests are rejected
     ///
     /// # Example
     /// ```rust
@@ -59,11 +59,11 @@ impl BudgetEnforcer {
     /// would exceed the configured limit.
     ///
     /// # Arguments
-    /// * `usage` — the usage record from a completed API response
+    /// * `usage`  -  the usage record from a completed API response
     ///
     /// # Returns
-    /// - `Ok(())` — the charge was accepted and recorded
-    /// - `Err(LlmError::BudgetExceeded)` — the limit would be exceeded
+    /// - `Ok(())`  -  the charge was accepted and recorded
+    /// - `Err(LlmError::BudgetExceeded)`  -  the limit would be exceeded
     ///
     /// # Panics
     /// This function never panics.
@@ -97,7 +97,7 @@ impl BudgetEnforcer {
             {
                 return Ok(());
             }
-            // CAS failed — another thread updated concurrently; retry
+            // CAS failed  -  another thread updated concurrently; retry
         }
     }
 

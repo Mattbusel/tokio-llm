@@ -7,12 +7,12 @@
 //!
 //! ## State Machine
 //! ```text
-//! Closed ──(threshold failures)──► Open
-//!   ▲                                │
-//!   │ (probe succeeds)               │ (reset_timeout elapses)
-//!   └──── HalfOpen ◄────────────────┘
-//!            │
-//!            └──(probe fails)──► Open
+//! Closed (threshold failures) Open
+//!                                   
+//!    (probe succeeds)                (reset_timeout elapses)
+//!    HalfOpen 
+//!            
+//!            (probe fails) Open
 //! ```
 //!
 //! ## Guarantees
@@ -34,11 +34,11 @@ use crate::error::LlmError;
 /// The internal state of the circuit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CircuitState {
-    /// Normal operation — calls pass through.
+    /// Normal operation  -  calls pass through.
     Closed,
-    /// Failure threshold exceeded — calls fast-fail.
+    /// Failure threshold exceeded  -  calls fast-fail.
     Open,
-    /// Cooldown elapsed — one probe call is forwarded to test recovery.
+    /// Cooldown elapsed  -  one probe call is forwarded to test recovery.
     HalfOpen,
 }
 
@@ -72,8 +72,8 @@ impl CircuitBreaker {
     /// Create a new [`CircuitBreaker`].
     ///
     /// # Arguments
-    /// * `failure_threshold` — number of consecutive failures that open the circuit
-    /// * `reset_timeout` — how long to stay Open before transitioning to HalfOpen
+    /// * `failure_threshold`  -  number of consecutive failures that open the circuit
+    /// * `reset_timeout`  -  how long to stay Open before transitioning to HalfOpen
     ///
     /// # Example
     /// ```rust
@@ -106,9 +106,9 @@ impl CircuitBreaker {
     ///   failure → Open again.
     ///
     /// # Returns
-    /// - `Ok(T)` — call succeeded
-    /// - `Err(LlmError::CircuitOpen { .. })` — circuit is open; request not sent
-    /// - `Err(e)` — the wrapped function returned an error
+    /// - `Ok(T)`  -  call succeeded
+    /// - `Err(LlmError::CircuitOpen { .. })`  -  circuit is open; request not sent
+    /// - `Err(e)`  -  the wrapped function returned an error
     ///
     /// # Panics
     /// This function never panics.
@@ -117,7 +117,7 @@ impl CircuitBreaker {
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<T, LlmError>>,
     {
-        // ── Phase 1: check state under lock ──────────────────────────────────
+        //  Phase 1: check state under lock 
         {
             let mut inner = self.inner.lock().await;
             match inner.state {
@@ -128,7 +128,7 @@ impl CircuitBreaker {
                         let remaining = self.reset_timeout.saturating_sub(elapsed);
                         debug!(
                             remaining_secs = remaining.as_secs_f64(),
-                            "circuit open — fast-failing request"
+                            "circuit open  -  fast-failing request"
                         );
                         return Err(LlmError::CircuitOpen {
                             reset_after_secs: remaining.as_secs_f64(),
@@ -144,10 +144,10 @@ impl CircuitBreaker {
             }
         }
 
-        // ── Phase 2: execute the call (outside the lock) ─────────────────────
+        //  Phase 2: execute the call (outside the lock) 
         let result = f().await;
 
-        // ── Phase 3: update state under lock ─────────────────────────────────
+        //  Phase 3: update state under lock 
         {
             let mut inner = self.inner.lock().await;
             match &result {

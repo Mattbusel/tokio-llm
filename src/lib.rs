@@ -59,12 +59,12 @@
 //!
 //! ```text
 //! LlmClient
-//!   ├── BudgetEnforcer   (pre-call spend guard)
-//!   ├── RetryPolicy      (exponential backoff scheduler)
-//!   ├── CircuitBreaker   (Open/HalfOpen/Closed state machine)
-//!   └── Provider trait
-//!         ├── OpenAiProvider    (Chat Completions API + SSE)
-//!         └── AnthropicProvider (Messages API + SSE)
+//!    BudgetEnforcer   (pre-call spend guard)
+//!    RetryPolicy      (exponential backoff scheduler)
+//!    CircuitBreaker   (Open/HalfOpen/Closed state machine)
+//!    Provider trait
+//!          OpenAiProvider    (Chat Completions API + SSE)
+//!          AnthropicProvider (Messages API + SSE)
 //! ```
 
 pub mod budget;
@@ -75,7 +75,7 @@ pub mod providers;
 pub mod retry;
 pub mod types;
 
-// ─── Re-exports ───────────────────────────────────────────────────────────────
+//  Re-exports 
 
 pub use budget::BudgetEnforcer;
 pub use circuit_breaker::{CircuitBreaker, CircuitState};

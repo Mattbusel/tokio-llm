@@ -31,7 +31,7 @@ use crate::providers::Provider;
 use crate::retry::RetryPolicy;
 use crate::types::{ChatRequest, ChatResponse, StreamChunk};
 
-// ─── LlmClient ───────────────────────────────────────────────────────────────
+//  LlmClient 
 
 /// The main user-facing async LLM client.
 ///
@@ -68,7 +68,7 @@ impl LlmClient {
     /// Begin building an OpenAI-backed client.
     ///
     /// # Arguments
-    /// * `api_key` — OpenAI secret key
+    /// * `api_key`  -  OpenAI secret key
     pub fn openai(api_key: impl Into<String>) -> ClientBuilder {
         ClientBuilder::new(Arc::new(OpenAiProvider::new(api_key)))
     }
@@ -76,7 +76,7 @@ impl LlmClient {
     /// Begin building an Anthropic-backed client.
     ///
     /// # Arguments
-    /// * `api_key` — Anthropic secret key
+    /// * `api_key`  -  Anthropic secret key
     pub fn anthropic(api_key: impl Into<String>) -> ClientBuilder {
         ClientBuilder::new(Arc::new(AnthropicProvider::new(api_key)))
     }
@@ -92,13 +92,13 @@ impl LlmClient {
     /// breaking, and budget enforcement applied.
     ///
     /// # Arguments
-    /// * `req` — the chat request to execute
+    /// * `req`  -  the chat request to execute
     ///
     /// # Returns
-    /// - `Ok(ChatResponse)` — the provider's response
-    /// - `Err(LlmError::BudgetExceeded)` — spend limit reached before the call
-    /// - `Err(LlmError::CircuitOpen { .. })` — circuit breaker is open
-    /// - `Err(e)` — provider error after all retry attempts exhausted
+    /// - `Ok(ChatResponse)`  -  the provider's response
+    /// - `Err(LlmError::BudgetExceeded)`  -  spend limit reached before the call
+    /// - `Err(LlmError::CircuitOpen { .. })`  -  circuit breaker is open
+    /// - `Err(e)`  -  provider error after all retry attempts exhausted
     ///
     /// # Panics
     /// This function never panics.
@@ -131,7 +131,7 @@ impl LlmClient {
                     warn!(
                         attempt,
                         error = %e,
-                        "retryable error — will retry"
+                        "retryable error  -  will retry"
                     );
                     last_err = Some(e);
                     continue;
@@ -150,11 +150,11 @@ impl LlmClient {
     /// Streaming requests are single-shot: no retry loop is applied. The
     /// circuit breaker still gates the initial connection.
     ///
-    /// Budget is **not** charged upfront for streaming — callers should track
+    /// Budget is **not** charged upfront for streaming  -  callers should track
     /// token usage from the final [`StreamChunk`] and record it separately.
     ///
     /// # Arguments
-    /// * `req` — the chat request to execute in streaming mode
+    /// * `req`  -  the chat request to execute in streaming mode
     ///
     /// # Returns
     /// A `Stream` of [`StreamChunk`] items. The last chunk will have
@@ -180,7 +180,7 @@ impl LlmClient {
     }
 }
 
-// ─── ClientBuilder ───────────────────────────────────────────────────────────
+//  ClientBuilder 
 
 /// Fluent builder for [`LlmClient`].
 ///
@@ -227,7 +227,7 @@ impl ClientBuilder {
     /// [`LlmError::BudgetExceeded`].
     ///
     /// # Arguments
-    /// * `limit_usd` — maximum total spend in USD
+    /// * `limit_usd`  -  maximum total spend in USD
     pub fn with_budget(mut self, limit_usd: f64) -> Self {
         self.budget = Some(limit_usd);
         self
@@ -236,8 +236,8 @@ impl ClientBuilder {
     /// Configure the circuit breaker.
     ///
     /// # Arguments
-    /// * `failure_threshold` — consecutive failures before opening
-    /// * `reset_timeout` — how long to stay Open before probing
+    /// * `failure_threshold`  -  consecutive failures before opening
+    /// * `reset_timeout`  -  how long to stay Open before probing
     pub fn with_circuit_breaker(mut self, failure_threshold: u32, reset_timeout: Duration) -> Self {
         self.cb_threshold = failure_threshold;
         self.cb_timeout = reset_timeout;
@@ -247,8 +247,8 @@ impl ClientBuilder {
     /// Consume the builder and construct an [`LlmClient`].
     ///
     /// # Returns
-    /// - `Ok(LlmClient)` — the fully-configured client
-    /// - `Err(LlmError::InvalidConfig)` — a configuration invariant was violated
+    /// - `Ok(LlmClient)`  -  the fully-configured client
+    /// - `Err(LlmError::InvalidConfig)`  -  a configuration invariant was violated
     ///
     /// # Panics
     /// This function never panics.
@@ -293,7 +293,7 @@ mod tests {
     use crate::types::{Message, Model, Usage};
     use std::sync::atomic::{AtomicU32, Ordering};
 
-    // ── Fake provider for testing ─────────────────────────────────────────────
+    //  Fake provider for testing 
 
     #[derive(Debug)]
     struct FakeProvider {
@@ -395,7 +395,7 @@ mod tests {
         ChatRequest::new(Model::Gpt4oMini, vec![Message::user("hi")])
     }
 
-    // ── Builder tests ────────────────────────────────────────────────────────
+    //  Builder tests 
 
     #[test]
     fn test_builder_default_builds_successfully() {
@@ -445,7 +445,7 @@ mod tests {
         assert_eq!(client.remaining_budget(), Some(5.0));
     }
 
-    // ── Chat tests ───────────────────────────────────────────────────────────
+    //  Chat tests 
 
     #[tokio::test]
     async fn test_chat_success_returns_response() {

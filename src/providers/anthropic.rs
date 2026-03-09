@@ -33,7 +33,7 @@ const ANTHROPIC_BASE_URL: &str = "https://api.anthropic.com/v1";
 /// Required API version header value.
 const ANTHROPIC_VERSION: &str = "2023-06-01";
 
-// ─── Wire types ──────────────────────────────────────────────────────────────
+//  Wire types 
 
 #[derive(Debug, Serialize)]
 struct AnthropicRequest<'a> {
@@ -116,7 +116,7 @@ struct AnthropicErrorDetail {
     message: String,
 }
 
-// ─── Pricing ─────────────────────────────────────────────────────────────────
+//  Pricing 
 
 /// Returns (input_price_per_1k, output_price_per_1k) in USD for a model.
 fn model_price_per_1k(model: &str) -> (f64, f64) {
@@ -137,7 +137,7 @@ fn compute_cost(model: &str, input_tokens: u32, output_tokens: u32) -> f64 {
         + (output_tokens as f64 / 1000.0) * output_price
 }
 
-// ─── Provider ────────────────────────────────────────────────────────────────
+//  Provider 
 
 /// Anthropic Messages API provider.
 ///
@@ -157,7 +157,7 @@ impl AnthropicProvider {
     /// Create a new [`AnthropicProvider`] with the given API key.
     ///
     /// # Arguments
-    /// * `api_key` — Anthropic secret key (starts with `sk-ant-`)
+    /// * `api_key`  -  Anthropic secret key (starts with `sk-ant-`)
     pub fn new(api_key: impl Into<String>) -> Self {
         Self {
             api_key: api_key.into(),
@@ -390,7 +390,7 @@ mod tests {
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
-    // ── Unit tests ───────────────────────────────────────────────────────────
+    //  Unit tests 
 
     #[test]
     fn test_compute_cost_claude35_sonnet() {
@@ -522,7 +522,7 @@ mod tests {
         assert_eq!(p.base_url, "http://localhost:9090");
     }
 
-    // ── Integration tests with wiremock ──────────────────────────────────────
+    //  Integration tests with wiremock 
 
     fn chat_request() -> ChatRequest {
         ChatRequest::new(

@@ -83,7 +83,7 @@ use std::time::Duration;
 let client = LlmClient::openai("sk-...")
     // Retry up to 3 times with 200ms base exponential backoff + jitter
     .with_retry(RetryPolicy::exponential(3, Duration::from_millis(200)))
-    // Hard USD spending cap — BudgetExceeded returned if exceeded
+    // Hard USD spending cap  -  BudgetExceeded returned if exceeded
     .with_budget(5.0)
     // Open circuit after 5 consecutive failures; probe again after 30s
     .with_circuit_breaker(5, Duration::from_secs(30))
@@ -149,16 +149,16 @@ match client.chat(req).await {
 ## Supported Models
 
 ### OpenAI
-- `Model::Gpt4o` — GPT-4o (flagship multimodal)
-- `Model::Gpt4oMini` — GPT-4o mini (fast and cheap)
-- `Model::Gpt4Turbo` — GPT-4 Turbo
-- `Model::Gpt35Turbo` — GPT-3.5 Turbo
-- `Model::O1`, `Model::O1Mini`, `Model::O3Mini` — reasoning models
+- `Model::Gpt4o`  -  GPT-4o (flagship multimodal)
+- `Model::Gpt4oMini`  -  GPT-4o mini (fast and cheap)
+- `Model::Gpt4Turbo`  -  GPT-4 Turbo
+- `Model::Gpt35Turbo`  -  GPT-3.5 Turbo
+- `Model::O1`, `Model::O1Mini`, `Model::O3Mini`  -  reasoning models
 
 ### Anthropic
-- `Model::Claude35Sonnet` — Claude 3.5 Sonnet (best balance)
-- `Model::Claude35Haiku` — Claude 3.5 Haiku (fastest)
-- `Model::Claude3Opus` — Claude 3 Opus (most capable)
+- `Model::Claude35Sonnet`  -  Claude 3.5 Sonnet (best balance)
+- `Model::Claude35Haiku`  -  Claude 3.5 Haiku (fastest)
+- `Model::Claude3Opus`  -  Claude 3 Opus (most capable)
 - `Model::Claude3Sonnet`, `Model::Claude3Haiku`
 
 ### Custom
@@ -170,7 +170,7 @@ Model::Custom("my-fine-tuned-model".into())
 
 ## See Also
 
-- [tokio-prompt-orchestrator](../README.md) — the full multi-stage LLM pipeline that
+- [tokio-prompt-orchestrator](../README.md)  -  the full multi-stage LLM pipeline that
   uses `tokio-llm` as its provider layer, adding RAG, deduplication, and
   multi-agent coordination on top.
 
