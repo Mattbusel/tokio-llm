@@ -20,16 +20,16 @@ use tokio_llm::types::{ChatRequest, Message, Model};
 
 #[tokio::main]
 async fn main() -> Result<(), tokio_llm::error::LlmError> {
-    let client = LlmClient::openai("sk-...").build()?;
+ let client = LlmClient::openai("sk-...").build()?;
 
-    let req = ChatRequest::new(
-        Model::Gpt4oMini,
-        vec![Message::user("What is the capital of France?")],
-    );
-    let resp = client.chat(req).await?;
-    println!("{}", resp.content);   // "Paris"
-    println!("Cost: ${:.6}", resp.usage.cost_usd);
-    Ok(())
+ let req = ChatRequest::new(
+ Model::Gpt4oMini,
+ vec![Message::user("What is the capital of France?")],
+ );
+ let resp = client.chat(req).await?;
+ println!("{}", resp.content); // "Paris"
+ println!("Cost: ${:.6}", resp.usage.cost_usd);
+ Ok(())
 }
 ```
 
@@ -41,18 +41,18 @@ use tokio_llm::types::{ChatRequest, Message, Model};
 
 #[tokio::main]
 async fn main() -> Result<(), tokio_llm::error::LlmError> {
-    let client = LlmClient::anthropic("sk-ant-...").build()?;
+ let client = LlmClient::anthropic("sk-ant-...").build()?;
 
-    let req = ChatRequest::new(
-        Model::Claude35Haiku,
-        vec![
-            Message::system("You are a concise assistant."),
-            Message::user("Hello!"),
-        ],
-    );
-    let resp = client.chat(req).await?;
-    println!("{}", resp.content);
-    Ok(())
+ let req = ChatRequest::new(
+ Model::Claude35Haiku,
+ vec![
+ Message::system("You are a concise assistant."),
+ Message::user("Hello!"),
+ ],
+ );
+ let resp = client.chat(req).await?;
+ println!("{}", resp.content);
+ Ok(())
 }
 ```
 
@@ -81,13 +81,13 @@ use tokio_llm::retry::RetryPolicy;
 use std::time::Duration;
 
 let client = LlmClient::openai("sk-...")
-    // Retry up to 3 times with 200ms base exponential backoff + jitter
-    .with_retry(RetryPolicy::exponential(3, Duration::from_millis(200)))
-    // Hard USD spending cap  -  BudgetExceeded returned if exceeded
-    .with_budget(5.0)
-    // Open circuit after 5 consecutive failures; probe again after 30s
-    .with_circuit_breaker(5, Duration::from_secs(30))
-    .build()?;
+ // Retry up to 3 times with 200ms base exponential backoff + jitter
+ .with_retry(RetryPolicy::exponential(3, Duration::from_millis(200)))
+ // Hard USD spending cap - BudgetExceeded returned if exceeded
+ .with_budget(5.0)
+ // Open circuit after 5 consecutive failures; probe again after 30s
+ .with_circuit_breaker(5, Duration::from_secs(30))
+ .build()?;
 
 println!("Remaining budget: ${:.2}", client.remaining_budget().unwrap_or(0.0));
 ```
@@ -103,22 +103,22 @@ use futures::StreamExt;
 
 #[tokio::main]
 async fn main() -> Result<(), tokio_llm::error::LlmError> {
-    let client = LlmClient::openai("sk-...").build()?;
+ let client = LlmClient::openai("sk-...").build()?;
 
-    let req = ChatRequest::new(
-        Model::Gpt4oMini,
-        vec![Message::user("Write me a haiku.")],
-    )
-    .with_max_tokens(100);
+ let req = ChatRequest::new(
+ Model::Gpt4oMini,
+ vec![Message::user("Write me a haiku.")],
+ )
+ .with_max_tokens(100);
 
-    let mut stream = client.chat_stream(req).await?;
-    while let Some(chunk) = stream.next().await {
-        match chunk? {
-            c if c.is_final => break,
-            c => print!("{}", c.delta),
-        }
-    }
-    Ok(())
+ let mut stream = client.chat_stream(req).await?;
+ while let Some(chunk) = stream.next().await {
+ match chunk? {
+ c if c.is_final => break,
+ c => print!("{}", c.delta),
+ }
+ }
+ Ok(())
 }
 ```
 
@@ -130,17 +130,17 @@ async fn main() -> Result<(), tokio_llm::error::LlmError> {
 use tokio_llm::error::LlmError;
 
 match client.chat(req).await {
-    Ok(resp) => println!("{}", resp.content),
-    Err(LlmError::RateLimited { retry_after_secs }) => {
-        eprintln!("Rate limited; retry after {retry_after_secs:?}s");
-    }
-    Err(LlmError::BudgetExceeded { spent, limit }) => {
-        eprintln!("Spent ${spent:.4} of ${limit:.4} budget");
-    }
-    Err(LlmError::CircuitOpen { reset_after_secs }) => {
-        eprintln!("Circuit open; will reset in {reset_after_secs:.1}s");
-    }
-    Err(e) => eprintln!("Error: {e}"),
+ Ok(resp) => println!("{}", resp.content),
+ Err(LlmError::RateLimited { retry_after_secs }) => {
+ eprintln!("Rate limited; retry after {retry_after_secs:?}s");
+ }
+ Err(LlmError::BudgetExceeded { spent, limit }) => {
+ eprintln!("Spent ${spent:.4} of ${limit:.4} budget");
+ }
+ Err(LlmError::CircuitOpen { reset_after_secs }) => {
+ eprintln!("Circuit open; will reset in {reset_after_secs:.1}s");
+ }
+ Err(e) => eprintln!("Error: {e}"),
 }
 ```
 
@@ -149,16 +149,16 @@ match client.chat(req).await {
 ## Supported Models
 
 ### OpenAI
-- `Model::Gpt4o`  -  GPT-4o (flagship multimodal)
-- `Model::Gpt4oMini`  -  GPT-4o mini (fast and cheap)
-- `Model::Gpt4Turbo`  -  GPT-4 Turbo
-- `Model::Gpt35Turbo`  -  GPT-3.5 Turbo
-- `Model::O1`, `Model::O1Mini`, `Model::O3Mini`  -  reasoning models
+- `Model::Gpt4o` - GPT-4o (flagship multimodal)
+- `Model::Gpt4oMini` - GPT-4o mini (fast and cheap)
+- `Model::Gpt4Turbo` - GPT-4 Turbo
+- `Model::Gpt35Turbo` - GPT-3.5 Turbo
+- `Model::O1`, `Model::O1Mini`, `Model::O3Mini` - reasoning models
 
 ### Anthropic
-- `Model::Claude35Sonnet`  -  Claude 3.5 Sonnet (best balance)
-- `Model::Claude35Haiku`  -  Claude 3.5 Haiku (fastest)
-- `Model::Claude3Opus`  -  Claude 3 Opus (most capable)
+- `Model::Claude35Sonnet` - Claude 3.5 Sonnet (best balance)
+- `Model::Claude35Haiku` - Claude 3.5 Haiku (fastest)
+- `Model::Claude3Opus` - Claude 3 Opus (most capable)
 - `Model::Claude3Sonnet`, `Model::Claude3Haiku`
 
 ### Custom
@@ -170,9 +170,9 @@ Model::Custom("my-fine-tuned-model".into())
 
 ## See Also
 
-- [tokio-prompt-orchestrator](../README.md)  -  the full multi-stage LLM pipeline that
-  uses `tokio-llm` as its provider layer, adding RAG, deduplication, and
-  multi-agent coordination on top.
+- [tokio-prompt-orchestrator](../README.md) - the full multi-stage LLM pipeline that
+ uses `tokio-llm` as its provider layer, adding RAG, deduplication, and
+ multi-agent coordination on top.
 
 ---
 
