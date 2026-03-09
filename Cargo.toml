@@ -1,0 +1,40 @@
+[package]
+name = "tokio-llm"
+version = "0.1.0"
+edition = "2021"
+description = "Tokio-native LLM client — OpenAI + Anthropic with retry, circuit breaker, streaming, and budget enforcement"
+license = "MIT"
+keywords = ["llm", "openai", "anthropic", "tokio", "async"]
+categories = ["asynchronous", "api-bindings", "network-programming"]
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+
+[dependencies]
+# tokio: async runtime — core dependency
+tokio = { version = "1.40", features = ["full"] }
+# reqwest: HTTP client with SSE streaming support
+reqwest = { version = "0.12", features = ["json", "stream"] }
+# serde/serde_json: JSON serialization for API payloads
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# thiserror: zero-cost error derive — replaces manual Display impls
+thiserror = "1.0"
+# futures: Stream trait and combinators for SSE streaming
+futures = "0.3"
+# tracing: structured async-aware instrumentation
+tracing = "0.1"
+# pin-project-lite: safe pinning for custom Stream impls
+pin-project-lite = "0.2"
+# async-trait: enables async fn in trait definitions (stable Rust workaround)
+async-trait = "0.1"
+
+[dev-dependencies]
+# tokio-test: async test helpers
+tokio-test = "0.4"
+# wiremock: HTTP mock server for provider unit tests
+wiremock = "0.6"
+# proptest: property-based testing for algorithmic invariants
+proptest = "1.0"
