@@ -102,6 +102,7 @@ impl LlmClient {
     ///
     /// # Panics
     /// This function never panics.
+    #[allow(clippy::type_complexity)]
     #[instrument(skip(self, req), fields(model = req.model.as_str()))]
     pub async fn chat(&self, req: ChatRequest) -> Result<ChatResponse, LlmError> {
         let max_attempts = self.retry.max_attempts();
@@ -169,6 +170,7 @@ impl LlmClient {
     ///
     /// # Panics
     /// This function never panics.
+    #[allow(clippy::type_complexity)]
     #[instrument(skip(self, req), fields(model = req.model.as_str()))]
     pub async fn chat_stream(
         &self,
