@@ -1,181 +1,143 @@
 # tokio-llm
 
-[![Crates.io](https://img.shields.io/crates/v/tokio-llm.svg)](https://crates.io/crates/tokio-llm)
-[![Docs.rs](https://docs.rs/tokio-llm/badge.svg)](https://docs.rs/tokio-llm)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/tokio-prompt/ci.yml)](https://github.com/your-org/tokio-prompt/actions)
+[![CI](https://github.com/Mattbusel/tokio-llm/actions/workflows/ci.yml/badge.svg)](https://github.com/Mattbusel/tokio-llm/actions/workflows/ci.yml)
 
-A Tokio-native async LLM client for **OpenAI** and **Anthropic** with built-in
-retry, circuit breaking, streaming, budget enforcement, and structured tracing.
+An async Rust client for OpenAI and Anthropic chat APIs with retry, a circuit breaker, a USD budget cap and SSE streaming built in.
 
----
-
-## Quick Start
-
-### OpenAI
-
-```rust
-use tokio_llm::client::LlmClient;
-use tokio_llm::types::{ChatRequest, Message, Model};
-
-#[tokio::main]
-async fn main() -> Result<(), tokio_llm::error::LlmError> {
- let client = LlmClient::openai("sk-...").build()?;
-
- let req = ChatRequest::new(
- Model::Gpt4oMini,
- vec![Message::user("What is the capital of France?")],
- );
- let resp = client.chat(req).await?;
- println!("{}", resp.content); // "Paris"
- println!("Cost: ${:.6}", resp.usage.cost_usd);
- Ok(())
-}
-```
-
-### Anthropic
-
-```rust
-use tokio_llm::client::LlmClient;
-use tokio_llm::types::{ChatRequest, Message, Model};
-
-#[tokio::main]
-async fn main() -> Result<(), tokio_llm::error::LlmError> {
- let client = LlmClient::anthropic("sk-ant-...").build()?;
-
- let req = ChatRequest::new(
- Model::Claude35Haiku,
- vec![
- Message::system("You are a concise assistant."),
- Message::user("Hello!"),
- ],
- );
- let resp = client.chat(req).await?;
- println!("{}", resp.content);
- Ok(())
-}
-```
-
----
+Calling an LLM in production is more than one HTTP request: you need backoff on 429s and 5xx, you need to stop hammering a provider that is down, and you need to know what you are spending. `tokio-llm` wraps both providers behind one `LlmClient` with those pieces already wired together, typed errors for every failure, and `tracing` spans on each request.
 
 ## Features
 
-| Feature | Description |
+| Feature | Details |
 |---|---|
-| **Dual provider** | OpenAI (GPT-4o, o1, o3) and Anthropic (Claude 3.5) via a unified API |
-| **Retry** | Exponential backoff with 25% jitter; configurable attempt count |
-| **Circuit breaker** | Closed → Open → HalfOpen state machine; prevents cascade failures |
-| **Budget enforcement** | Lock-free atomic USD spend tracker; hard spending limits |
-| **Streaming** | SSE-native `Stream<Item = StreamChunk>` for both providers |
-| **Tracing** | `tracing` instrumentation on every request path |
-| **Zero panics** | No `unwrap`/`expect`/`panic!` in production code paths |
-| **Typed errors** | Every failure mode is a named `LlmError` variant, matchable exhaustively |
+| **Two providers, one API** | `LlmClient::openai(key)` (Chat Completions) and `LlmClient::anthropic(key)` (Messages API); system messages are mapped correctly for each |
+| **Retry** | `RetryPolicy::exponential(attempts, base_delay)` with jitter and a delay cap; only rate limits, timeouts and HTTP 500/502/503/504 are retried |
+| **Circuit breaker** | Closed, Open, HalfOpen state machine: opens after N consecutive failures, probes again after a timeout |
+| **Budget cap** | Lock-free USD spend tracker; once the cap is reached `chat` returns `LlmError::BudgetExceeded` |
+| **Streaming** | `chat_stream` returns a `Stream<Item = Result<StreamChunk, LlmError>>` for both providers |
+| **Cost per call** | `ChatResponse.usage` carries prompt tokens, completion tokens and `cost_usd` from a built-in price table |
+| **Custom endpoints** | `OpenAiProvider::with_base_url` / `AnthropicProvider::with_base_url` plus `LlmClient::with_provider` for proxies, gateways or OpenAI-compatible servers |
+| **No panics** | `unwrap`, `expect` and `panic` are denied by Clippy lints |
 
----
+## Install
 
-## Builder Pattern: Full Configuration
+Not published on crates.io yet; use the git dependency:
 
-```rust
-use tokio_llm::client::LlmClient;
-use tokio_llm::retry::RetryPolicy;
-use std::time::Duration;
-
-let client = LlmClient::openai("sk-...")
- // Retry up to 3 times with 200ms base exponential backoff + jitter
- .with_retry(RetryPolicy::exponential(3, Duration::from_millis(200)))
- // Hard USD spending cap - BudgetExceeded returned if exceeded
- .with_budget(5.0)
- // Open circuit after 5 consecutive failures; probe again after 30s
- .with_circuit_breaker(5, Duration::from_secs(30))
- .build()?;
-
-println!("Remaining budget: ${:.2}", client.remaining_budget().unwrap_or(0.0));
+```toml
+[dependencies]
+tokio-llm = { git = "https://github.com/Mattbusel/tokio-llm" }
+tokio = { version = "1", features = ["full"] }
+futures = "0.3" # for streaming
 ```
 
----
-
-## Streaming
+## Quick start
 
 ```rust
-use tokio_llm::client::LlmClient;
-use tokio_llm::types::{ChatRequest, Message, Model};
-use futures::StreamExt;
+use std::time::Duration;
+use tokio_llm::{ChatRequest, LlmClient, LlmError, Message, Model, RetryPolicy};
 
 #[tokio::main]
-async fn main() -> Result<(), tokio_llm::error::LlmError> {
- let client = LlmClient::openai("sk-...").build()?;
+async fn main() -> Result<(), LlmError> {
+    let key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
+    let client = LlmClient::openai(key)
+        .with_retry(RetryPolicy::exponential(3, Duration::from_millis(200)))
+        .with_budget(5.0)                                    // hard cap in USD
+        .with_circuit_breaker(5, Duration::from_secs(30))    // open after 5 failures
+        .build()?;
 
- let req = ChatRequest::new(
- Model::Gpt4oMini,
- vec![Message::user("Write me a haiku.")],
- )
- .with_max_tokens(100);
+    let req = ChatRequest::new(
+        Model::Gpt4oMini,
+        vec![
+            Message::system("You are a concise assistant."),
+            Message::user("What is the capital of France?"),
+        ],
+    )
+    .with_max_tokens(50);
 
- let mut stream = client.chat_stream(req).await?;
- while let Some(chunk) = stream.next().await {
- match chunk? {
- c if c.is_final => break,
- c => print!("{}", c.delta),
- }
- }
- Ok(())
+    match client.chat(req).await {
+        Ok(resp) => {
+            println!("{}", resp.content);
+            println!("cost ${:.6}, remaining ${:.4}", resp.usage.cost_usd, client.remaining_budget().unwrap_or(0.0));
+        }
+        Err(LlmError::RateLimited { retry_after_secs }) => eprintln!("rate limited, retry after {retry_after_secs:?}s"),
+        Err(LlmError::BudgetExceeded { spent, limit }) => eprintln!("spent ${spent:.4} of ${limit:.4}"),
+        Err(LlmError::CircuitOpen { reset_after_secs }) => eprintln!("provider down, retry in {reset_after_secs:.1}s"),
+        Err(e) => eprintln!("error: {e}"),
+    }
+    Ok(())
 }
 ```
 
----
-
-## Error Handling
+Anthropic is the same code with a different constructor and model:
 
 ```rust
-use tokio_llm::error::LlmError;
+use tokio_llm::{ChatRequest, LlmClient, LlmError, Message, Model};
 
-match client.chat(req).await {
- Ok(resp) => println!("{}", resp.content),
- Err(LlmError::RateLimited { retry_after_secs }) => {
- eprintln!("Rate limited; retry after {retry_after_secs:?}s");
- }
- Err(LlmError::BudgetExceeded { spent, limit }) => {
- eprintln!("Spent ${spent:.4} of ${limit:.4} budget");
- }
- Err(LlmError::CircuitOpen { reset_after_secs }) => {
- eprintln!("Circuit open; will reset in {reset_after_secs:.1}s");
- }
- Err(e) => eprintln!("Error: {e}"),
+async fn ask_claude() -> Result<String, LlmError> {
+    let client = LlmClient::anthropic(std::env::var("ANTHROPIC_API_KEY").unwrap_or_default()).build()?;
+    let req = ChatRequest::new(Model::Custom("claude-sonnet-4-5".into()), vec![Message::user("Hello!")]);
+    Ok(client.chat(req).await?.content)
 }
 ```
 
----
+### Streaming
 
-## Supported Models
-
-### OpenAI
-- `Model::Gpt4o` - GPT-4o (flagship multimodal)
-- `Model::Gpt4oMini` - GPT-4o mini (fast and cheap)
-- `Model::Gpt4Turbo` - GPT-4 Turbo
-- `Model::Gpt35Turbo` - GPT-3.5 Turbo
-- `Model::O1`, `Model::O1Mini`, `Model::O3Mini` - reasoning models
-
-### Anthropic
-- `Model::Claude35Sonnet` - Claude 3.5 Sonnet (best balance)
-- `Model::Claude35Haiku` - Claude 3.5 Haiku (fastest)
-- `Model::Claude3Opus` - Claude 3 Opus (most capable)
-- `Model::Claude3Sonnet`, `Model::Claude3Haiku`
-
-### Custom
 ```rust
-Model::Custom("my-fine-tuned-model".into())
+use futures::StreamExt;
+use tokio_llm::{ChatRequest, LlmClient, LlmError, Message, Model};
+
+async fn haiku(client: &LlmClient) -> Result<(), LlmError> {
+    let req = ChatRequest::new(Model::Gpt4oMini, vec![Message::user("Write a haiku about Rust.")]);
+    let mut stream = client.chat_stream(req).await?;
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk?;
+        if chunk.is_final {
+            break;
+        }
+        print!("{}", chunk.delta);
+    }
+    Ok(())
+}
+```
+
+## Models
+
+`Model` has named variants for `Gpt4o`, `Gpt4oMini`, `Gpt4Turbo`, `Gpt35Turbo`, `O1`, `O1Mini`, `O3Mini`, `Claude35Sonnet`, `Claude35Haiku`, `Claude3Opus`, `Claude3Sonnet` and `Claude3Haiku`. Use `Model::Custom("model-id".into())` for anything else, including newer models; the provider is chosen by the client you built, not by the model name.
+
+## How it works
+
+```
+LlmClient::chat(req)
+  -> RetryPolicy        loop with exponential backoff + jitter
+     -> CircuitBreaker  rejects immediately while Open
+        -> Provider     OpenAiProvider | AnthropicProvider (reqwest, JSON or SSE)
+  -> BudgetEnforcer     records usage.cost_usd, errors once the cap is crossed
+```
+
+| File | What it holds |
+|---|---|
+| `src/client.rs` | `LlmClient`, `ClientBuilder` |
+| `src/providers/openai.rs`, `anthropic.rs` | request/response mapping, SSE parsing, price tables |
+| `src/retry.rs` | `RetryPolicy` |
+| `src/circuit_breaker.rs` | `CircuitBreaker`, `CircuitState` |
+| `src/budget.rs` | `BudgetEnforcer` (atomic compare-and-swap on an `f64` bit pattern) |
+| `src/types.rs`, `src/error.rs` | `ChatRequest`, `ChatResponse`, `Message`, `Model`, `Usage`, `StreamChunk`, `LlmError` |
+
+Provider tests run against a local `wiremock` server, so `cargo test` needs no API keys.
+
+## Status and limitations
+
+Version 0.1.
+
+- The budget is charged after a response arrives, so the call that crosses the cap has already been paid for; its response is returned as `BudgetExceeded`.
+- Streaming calls are not retried and are not charged to the budget automatically.
+- Price tables cover the named `Model` variants; `Custom` models are priced with a fallback default, so treat their `cost_usd` as an estimate.
+- Text chat only: no tool calling, images or embeddings.
+
+```bash
+cargo test
 ```
 
 ---
 
-## See Also
-
-- [tokio-prompt-orchestrator](../README.md) - the full multi-stage LLM pipeline that
- uses `tokio-llm` as its provider layer, adding RAG, deduplication, and
- multi-agent coordination on top.
-
----
-
-## License
-
-MIT
+Part of a set of Rust crates for LLM agents, see [rust-crates](https://github.com/Mattbusel/rust-crates).
